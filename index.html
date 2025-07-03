@@ -183,18 +183,18 @@
 
         
         <div class="add-section">
-            <h3>Quản lý Links:</h3>
+            <h3>➕ Quản lý Links:</h3>
             <div style="margin-bottom: 10px;">
                 <input type="text" id="linkName" placeholder="Tên group (VD: Group Marketing 2025)" class="group-input" style="width: 200px;">
                 <input type="url" id="linkUrl" placeholder="https://facebook.com/groups/..." class="group-input" style="width: 300px;">
-                <button onclick="addNewLink()" class="add-group">Thêm Link</button>
+                <button onclick="addNewLink()" class="add-group">➕ Thêm Link</button>
             </div>
             <div>
                 <select id="linkToDelete" class="group-input" style="width: 250px;">
                     <option value="">-- Chọn link để xóa --</option>
                 </select>
-                <button onclick="deleteSelectedLink()" class="remove-group" style="margin-left: 10px; padding: 8px 15px;">Xóa Link</button>
-                <button onclick="clearAllLinks()" class="remove-group" style="margin-left: 5px; padding: 8px 15px;">Xóa tất cả</button>
+                <button onclick="deleteSelectedLink()" class="remove-group" style="margin-left: 10px; padding: 8px 15px;">🗑️ Xóa Link</button>
+                <button onclick="clearAllLinks()" class="remove-group" style="margin-left: 5px; padding: 8px 15px;">🧹 Xóa tất cả</button>
             </div>
         </div>
         
@@ -203,7 +203,7 @@
                 Danh sách Links
             </div>
             <div class="dropdown-content" id="dropdown-0" style="width: 100%; max-height: 300px; overflow-y: auto;">
-                <!-- render links-->
+                <!-- Links sẽ được render ở đây -->
             </div>
         </div>
         
@@ -226,7 +226,7 @@
             </div>
             
             <button onclick="openSelectedGroups()" class="open-button" id="openBtn">
-                MỞ TẤT CẢ LINKS
+                🚀 MỞ TẤT CẢ LINKS
             </button>
             
             <div class="status" id="status"></div>
@@ -234,13 +234,13 @@
     </div>
 
     <script>
-        // Danh sách links
+        // Dữ liệu đơn giản - chỉ một danh sách links
         let linksData = [
-            { name: "aifirst.vn", url: "https://facebook.com/groups/aifirst.vn" },
-            { name: "aivietnam.edu.vn", url: "https://facebook.com/groups/aivietnam.edu.vn/" },
-            { name: "ai.transform", url: "https://facebook.com/groups/ai.transform" },
-            { name: "AI Learning Hub - Cộng Đồng Chia Sẻ & Kết Nối", url: "https://facebook.com/groups/1255173554614475" },
-            { name: "AI FOR VIETNAM EDUCATION", url: "https://facebook.com/groups/1043393823642926" }
+            { name: "Link 1", url: "https://facebook.com/groups/group1" },
+            { name: "Link 2", url: "https://facebook.com/groups/group2" },
+            { name: "Link 3", url: "https://facebook.com/groups/group3" },
+            { name: "Link 4", url: "https://facebook.com/groups/group4" },
+            { name: "Link 5", url: "https://facebook.com/groups/group5" }
         ];
 
         function renderLinks() {
@@ -282,15 +282,31 @@
             fromSelect.innerHTML = '';
             toSelect.innerHTML = '';
             
+            // Tạo options từ 1 đến totalLinks
             for (let i = 1; i <= totalLinks; i++) {
                 fromSelect.innerHTML += `<option value="${i}">${i}</option>`;
                 toSelect.innerHTML += `<option value="${i}">${i}</option>`;
             }
             
             // Khôi phục giá trị nếu còn hợp lệ
-            if (currentFrom <= totalLinks) fromSelect.value = currentFrom;
-            if (currentTo <= totalLinks) toSelect.value = currentTo;
-            else toSelect.value = totalLinks;
+            if (currentFrom && currentFrom <= totalLinks && currentFrom >= 1) {
+                fromSelect.value = currentFrom;
+            } else {
+                fromSelect.value = 1; // Default to 1
+            }
+            
+            if (currentTo && currentTo <= totalLinks && currentTo >= 1) {
+                toSelect.value = currentTo;
+            } else {
+                toSelect.value = totalLinks || 1; // Default to max or 1
+            }
+            
+            // Debug log
+            console.log('Updated range selectors:', {
+                totalLinks: totalLinks,
+                fromValue: fromSelect.value,
+                toValue: toSelect.value
+            });
         }
 
         function toggleDropdown(index) {
@@ -300,10 +316,10 @@
         }
 
         function clearAllLinks() {
-            if (confirm('Bạn có chắc muốn xóa TẤT CẢ links? Hành động này không thể hoàn tác!')) {
+            if (confirm('⚠️ Bạn có chắc muốn xóa TẤT CẢ links? Hành động này không thể hoàn tác!')) {
                 linksData = [];
                 renderLinks();
-                alert('Đã xóa tất cả links!');
+                alert('✅ Đã xóa tất cả links!');
             }
         }
 
@@ -312,7 +328,7 @@
             const url = document.getElementById('linkUrl').value.trim();
             
             if (!name || !url) {
-                alert('Vui lòng nhập đầy đủ tên và URL!');
+                alert('⚠️ Vui lòng nhập đầy đủ tên và URL!');
                 return;
             }
             
@@ -320,7 +336,7 @@
             try {
                 new URL(url);
             } catch (e) {
-                alert('URL không hợp lệ! Vui lòng kiểm tra lại.');
+                alert('⚠️ URL không hợp lệ! Vui lòng kiểm tra lại.');
                 return;
             }
             
@@ -331,7 +347,7 @@
             document.getElementById('linkUrl').value = '';
             
             renderLinks();
-            alert(`Đã thêm "${name}" vào danh sách!`);
+            alert(`✅ Đã thêm "${name}" vào danh sách!`);
         }
 
         function deleteSelectedLink() {
@@ -365,31 +381,51 @@
                 return;
             }
             
-            openBtn.disabled = true;
-            openBtn.textContent = 'Đang mở...';
+            if (linksData.length === 0) {
+                alert('⚠️ Không có links để mở!');
+                return;
+            }
             
-            // Lấy links trong khoảng được chọn
-            const selectedLinks = linksData.slice(fromLink - 1, toLink);
+            openBtn.disabled = true;
+            openBtn.textContent = '⏳ Đang mở...';
+            
+            // Debug: Log để kiểm tra
+            console.log('fromLink:', fromLink, 'toLink:', toLink);
+            console.log('linksData:', linksData);
+            
+            // Lấy links trong khoảng được chọn - FIX: sử dụng slice đúng cách
+            const selectedLinks = linksData.slice(fromLink - 1, toLink); // slice(start, end) - end không bao gồm
+            console.log('selectedLinks:', selectedLinks);
+            
             const totalSelected = selectedLinks.length;
+            
+            if (totalSelected === 0) {
+                alert('⚠️ Không có links trong khoảng đã chọn!');
+                openBtn.disabled = false;
+                openBtn.textContent = '🚀 MỞ TẤT CẢ LINKS';
+                return;
+            }
             
             for (let i = 0; i < selectedLinks.length; i++) {
                 const link = selectedLinks[i];
                 const currentLinkNumber = fromLink + i;
                 
-                status.textContent = `Đang mở link ${currentLinkNumber}/${toLink}: ${link.name}`;
+                status.textContent = `🚀 Đang mở link ${currentLinkNumber}/${toLink}: ${link.name}`;
                 status.style.color = '#1877f2';
                 
+                console.log(`Opening link ${currentLinkNumber}:`, link.name, link.url);
                 window.open(link.url, '_blank');
                 
+                // Delay giữa các links (trừ link cuối cùng)
                 if (i < selectedLinks.length - 1) {
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
             
-            status.textContent = `Hoàn thành! Đã mở ${totalSelected} links (từ ${fromLink} đến ${toLink}). 🎉`;
+            status.textContent = `✅ Hoàn thành! Đã mở ${totalSelected} links (từ ${fromLink} đến ${toLink}). 🎉`;
             status.style.color = '#28a745';
             openBtn.disabled = false;
-            openBtn.textContent = 'MỞ TẤT CẢ LINKS';
+            openBtn.textContent = '🚀 MỞ TẤT CẢ LINKS';
         }
 
         // Khởi tạo giao diện
