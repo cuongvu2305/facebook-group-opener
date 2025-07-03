@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Group Auto Opener</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1877f2;
+            margin-bottom: 30px;
+        }
+        
+        .group-section {
+            display: inline-block;
+            margin: 15px;
+            vertical-align: top;
+        }
+        
+        .dropdown-header {
+            width: 120px;
+            height: 40px;
+            border: 2px solid #333;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .dropdown-header::after {
+            content: "▼";
+            position: absolute;
+            right: 10px;
+            font-size: 12px;
+        }
+        
+        .dropdown-content {
+            width: 120px;
+            border: 2px solid #333;
+            border-top: none;
+            background: white;
+            min-height: 200px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        .group-item {
+            padding: 8px 5px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .group-item:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .group-item:last-child {
+            border-bottom: none;
+        }
+        
+        .open-button {
+            width: 200px;
+            height: 50px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 30px auto;
+            display: block;
+            transition: background-color 0.2s;
+        }
+        
+        .open-button:hover {
+            background-color: #166fe5;
+        }
+        
+        .open-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .delay-setting {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: inline-block;
+            width: 150px;
+            text-align: right;
+            margin-right: 10px;
+        }
+        
+        input[type="number"], select {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        select {
+            width: 90px;
+        }
+        
+        .status {
+            text-align: center;
+            margin: 15px 0;
+            font-weight: bold;
+            min-height: 20px;
+        }
+        
+        .add-group {
+            background-color: #42b883;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        
+        .remove-group {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 12px;
+        }
+        
+        .group-input {
+            width: 300px;
+            padding: 8px;
+            margin: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .add-section {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Facebook Group Auto Opener</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">
+            Công cụ mở nhiều Facebook Groups tự động - Dành cho Marketing & Social Media
+        </p>
+        
+
+        
+        <div class="add-section">
+            <h3>Quản lý Links:</h3>
+            <div style="margin-bottom: 10px;">
+                <input type="text" id="linkName" placeholder="Tên group (VD: Group Marketing 2025)" class="group-input" style="width: 200px;">
+                <input type="url" id="linkUrl" placeholder="https://facebook.com/groups/..." class="group-input" style="width: 300px;">
+                <button onclick="addNewLink()" class="add-group">Thêm Link</button>
+            </div>
+            <div>
+                <select id="linkToDelete" class="group-input" style="width: 250px;">
+                    <option value="">-- Chọn link để xóa --</option>
+                </select>
+                <button onclick="deleteSelectedLink()" class="remove-group" style="margin-left: 10px; padding: 8px 15px;">Xóa Link</button>
+                <button onclick="clearAllLinks()" class="remove-group" style="margin-left: 5px; padding: 8px 15px;">Xóa tất cả</button>
+            </div>
+        </div>
+        
+        <div class="group-section" style="width: 100%; max-width: 400px; margin: 20px auto;">
+            <div class="dropdown-header" onclick="toggleDropdown(0)" style="width: 100%;">
+                Danh sách Links
+            </div>
+            <div class="dropdown-content" id="dropdown-0" style="width: 100%; max-height: 300px; overflow-y: auto;">
+                <!-- render links-->
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="delay-setting">
+                <label for="delay">Độ trễ giữa các tab (giây):</label>
+                <input type="number" id="delay" value="2" min="1" max="10">
+            </div>
+            
+            <div class="delay-setting">
+                <label for="fromLink">Mở từ link số:</label>
+                <select id="fromLink">
+                    <option value="1">1</option>
+                </select>
+                
+                <label for="toLink" style="margin-left: 20px;">Đến link số:</label>
+                <select id="toLink">
+                    <option value="1">1</option>
+                </select>
+            </div>
+            
+            <button onclick="openSelectedGroups()" class="open-button" id="openBtn">
+                MỞ TẤT CẢ LINKS
+            </button>
+            
+            <div class="status" id="status"></div>
+        </div>
+    </div>
+
+    <script>
+        // Danh sách links
+        let linksData = [
+            { name: "aifirst.vn", url: "https://facebook.com/groups/aifirst.vn" },
+            { name: "aivietnam.edu.vn", url: "https://facebook.com/groups/aivietnam.edu.vn/" },
+            { name: "ai.transform", url: "https://facebook.com/groups/ai.transform" },
+            { name: "AI Learning Hub - Cộng Đồng Chia Sẻ & Kết Nối", url: "https://facebook.com/groups/1255173554614475" },
+            { name: "AI FOR VIETNAM EDUCATION", url: "https://facebook.com/groups/1043393823642926" }
+        ];
+
+        function renderLinks() {
+            const container = document.getElementById('dropdown-0');
+            container.innerHTML = '';
+            
+            linksData.forEach((link, index) => {
+                const linkDiv = document.createElement('div');
+                linkDiv.className = 'group-item';
+                linkDiv.onclick = () => openSingleLink(link.url);
+                linkDiv.innerHTML = `${index + 1}. ${link.name}`;
+                container.appendChild(linkDiv);
+            });
+            
+            updateRangeSelectors();
+            updateDeleteLinkSelector();
+        }
+
+        function updateDeleteLinkSelector() {
+            const selector = document.getElementById('linkToDelete');
+            selector.innerHTML = '<option value="">-- Chọn link để xóa --</option>';
+            
+            linksData.forEach((link, index) => {
+                selector.innerHTML += `<option value="${index}">${index + 1}. ${link.name}</option>`;
+            });
+        }
+
+        function updateRangeSelectors() {
+            const totalLinks = linksData.length;
+            
+            const fromSelect = document.getElementById('fromLink');
+            const toSelect = document.getElementById('toLink');
+            
+            // Lưu giá trị hiện tại
+            const currentFrom = fromSelect.value;
+            const currentTo = toSelect.value;
+            
+            // Clear và rebuild options
+            fromSelect.innerHTML = '';
+            toSelect.innerHTML = '';
+            
+            for (let i = 1; i <= totalLinks; i++) {
+                fromSelect.innerHTML += `<option value="${i}">${i}</option>`;
+                toSelect.innerHTML += `<option value="${i}">${i}</option>`;
+            }
+            
+            // Khôi phục giá trị nếu còn hợp lệ
+            if (currentFrom <= totalLinks) fromSelect.value = currentFrom;
+            if (currentTo <= totalLinks) toSelect.value = currentTo;
+            else toSelect.value = totalLinks;
+        }
+
+        function toggleDropdown(index) {
+            const dropdown = document.getElementById(`dropdown-${index}`);
+            const isVisible = dropdown.style.display !== 'none';
+            dropdown.style.display = isVisible ? 'none' : 'block';
+        }
+
+        function clearAllLinks() {
+            if (confirm('Bạn có chắc muốn xóa TẤT CẢ links? Hành động này không thể hoàn tác!')) {
+                linksData = [];
+                renderLinks();
+                alert('Đã xóa tất cả links!');
+            }
+        }
+
+        function addNewLink() {
+            const name = document.getElementById('linkName').value.trim();
+            const url = document.getElementById('linkUrl').value.trim();
+            
+            if (!name || !url) {
+                alert('Vui lòng nhập đầy đủ tên và URL!');
+                return;
+            }
+            
+            // Validate URL
+            try {
+                new URL(url);
+            } catch (e) {
+                alert('URL không hợp lệ! Vui lòng kiểm tra lại.');
+                return;
+            }
+            
+            linksData.push({ name, url });
+            
+            // Clear inputs
+            document.getElementById('linkName').value = '';
+            document.getElementById('linkUrl').value = '';
+            
+            renderLinks();
+            alert(`Đã thêm "${name}" vào danh sách!`);
+        }
+
+        function deleteSelectedLink() {
+            const selector = document.getElementById('linkToDelete');
+            const index = parseInt(selector.value);
+            
+            if (isNaN(index)) {
+                alert('Vui lòng chọn link để xóa!');
+                return;
+            }
+            
+            if (confirm(`Bạn có chắc muốn xóa link "${linksData[index].name}"?`)) {
+                linksData.splice(index, 1);
+                renderLinks();
+            }
+        }
+
+        function openSingleLink(url) {
+            window.open(url, '_blank');
+        }
+
+        async function openSelectedGroups() {
+            const fromLink = parseInt(document.getElementById('fromLink').value);
+            const toLink = parseInt(document.getElementById('toLink').value);
+            const delay = parseInt(document.getElementById('delay').value) * 1000;
+            const openBtn = document.getElementById('openBtn');
+            const status = document.getElementById('status');
+            
+            if (fromLink > toLink) {
+                alert('Link bắt đầu không thể lớn hơn link kết thúc!');
+                return;
+            }
+            
+            openBtn.disabled = true;
+            openBtn.textContent = 'Đang mở...';
+            
+            // Lấy links trong khoảng được chọn
+            const selectedLinks = linksData.slice(fromLink - 1, toLink);
+            const totalSelected = selectedLinks.length;
+            
+            for (let i = 0; i < selectedLinks.length; i++) {
+                const link = selectedLinks[i];
+                const currentLinkNumber = fromLink + i;
+                
+                status.textContent = `Đang mở link ${currentLinkNumber}/${toLink}: ${link.name}`;
+                status.style.color = '#1877f2';
+                
+                window.open(link.url, '_blank');
+                
+                if (i < selectedLinks.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+            
+            status.textContent = `Hoàn thành! Đã mở ${totalSelected} links (từ ${fromLink} đến ${toLink}). 🎉`;
+            status.style.color = '#28a745';
+            openBtn.disabled = false;
+            openBtn.textContent = 'MỞ TẤT CẢ LINKS';
+        }
+
+        // Khởi tạo giao diện
+        renderLinks();
+    </script>
+</body>
+</html>
