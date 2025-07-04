@@ -175,26 +175,26 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔗 Facebook Group Auto Opener</h1>
+        <h1>Facebook Group Auto Opener</h1>
         
         <div class="add-section">
-            <h3>➕ Quản lý Links:</h3>
+            <h3>Quản lý Links:</h3>
             <div style="margin-bottom: 10px;">
-                <input type="text" id="linkName" placeholder="Tên group" class="group-input" style="width: 200px;">
+                <input type="text" id="linkName" placeholder="Tên group (VD: Group Marketing 2025)" class="group-input" style="width: 200px;">
                 <input type="url" id="linkUrl" placeholder="https://facebook.com/groups/..." class="group-input" style="width: 300px;">
-                <button onclick="addNewLink()" class="add-group">➕ Thêm Link</button>
+                <button onclick="addNewLink()" class="add-group">Thêm Link</button>
             </div>
             <div>
                 <select id="linkToDelete" class="group-input" style="width: 250px;">
                     <option value="">-- Chọn link để xóa --</option>
                 </select>
-                <button onclick="deleteSelectedLink()" class="remove-group" style="margin-left: 10px; padding: 8px 15px;">🗑️ Xóa Link</button>
-                <button onclick="clearAllLinks()" class="remove-group" style="margin-left: 5px; padding: 8px 15px;">🧹 Xóa tất cả</button>
+                <button onclick="deleteSelectedLink()" class="remove-group" style="margin-left: 10px; padding: 8px 15px;">Xóa Link</button>
+                <button onclick="clearAllLinks()" class="remove-group" style="margin-left: 5px; padding: 8px 15px;">Xóa tất cả</button>
             </div>
             <div style="text-align: center; margin-top: 10px;">
                 <small id="saveStatus" style="font-weight: bold;"></small>
                 <br>
-                <small style="color: #666;">💾 Dữ liệu tự động lưu vào trình duyệt</small>
+                <small style="color: #666;">Dữ liệu tự động lưu vào trình duyệt</small>
             </div>
         </div>
         
@@ -226,15 +226,25 @@
             </div>
             
             <button onclick="openSelectedGroups()" class="open-button" id="openBtn">
-                🚀 MỞ TẤT CẢ LINKS
+                MỞ TẤT CẢ LINKS
             </button>
             
             <div style="text-align: center; margin: 15px 0;">
                 <button onclick="testRange()" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0 5px;">
-                    🔍 Test Range
+                    Test Range
                 </button>
                 <button onclick="testPopup()" style="background: #fd7e14; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0 5px;">
-                    🪟 Test Popup
+                    Test Popup
+                </button>
+                <button onclick="debugStorage()" style="background: #6f42c1; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0 5px;">
+                    Debug Storage
+                </button>
+                <button onclick="exportData()" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0 5px;">
+                    Export Backup
+                </button>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                <button onclick="document.getElementById('importFile').click()" style="background: #17a2b8; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0 5px;">
+                    Import Backup
                 </button>
             </div>
             
@@ -248,44 +258,83 @@
 
         // Load data từ localStorage khi khởi động
         function loadFromStorage() {
+            console.log('Loading data from localStorage...');
             try {
                 const saved = localStorage.getItem('fbGroupLinks');
-                if (saved) {
-                    linksData = JSON.parse(saved);
-                    console.log('✅ Loaded', linksData.length, 'links from localStorage');
-                } else {
-                    // Default demo data nếu chưa có
-                    linksData = [
-                        { name: "AIFIRST", url: "https://www.facebook.com/groups/aifirst.vn" },
-                        { name: "AI VIET NAM", url: "https://www.facebook.com/groups/aivietnam.edu.vn" },
-                        { name: "AI-First Company x AI First Growth Platform", url: "https://www.facebook.com/groups/ai.transform" },
-                        { name: "Chém Gió Về AI - Cộng Đồng Chia Sẻ & Kết Nối", url: "https://www.facebook.com/groups/1255173554614475" },
-                        { name: "AI FOR VIETNAM EDUCATION", url: "https://www.facebook.com/groups/1043393823642926" }
-                    ];
-                    saveToStorage(); // Lưu demo data
+                console.log('Raw localStorage data:', saved);
+                
+                if (saved && saved !== 'null' && saved !== 'undefined') {
+                    const parsedData = JSON.parse(saved);
+                    console.log('Parsed data:', parsedData);
+                    
+                    if (Array.isArray(parsedData) && parsedData.length > 0) {
+                        linksData = parsedData;
+                        console.log('Loaded', linksData.length, 'links from localStorage');
+                        updateSaveStatus(`Đã tải ${linksData.length} links`);
+                        return;
+                    }
                 }
+                
+                // Nếu không có data hoặc data rỗng, tạo demo data
+                console.log('No valid data found, creating demo data...');
+                linksData = [
+                    { name: "Demo Link 1", url: "https://facebook.com/groups/demo1" },
+                    { name: "Demo Link 2", url: "https://facebook.com/groups/demo2" },
+                    { name: "Demo Link 3", url: "https://facebook.com/groups/demo3" }
+                ];
+                saveToStorage(); // Lưu demo data ngay
+                updateSaveStatus('Tạo demo data');
+                
             } catch (error) {
-                console.error('❌ Error loading from localStorage:', error);
+                console.error('Error loading from localStorage:', error);
                 linksData = [];
+                updateSaveStatus('Lỗi tải dữ liệu');
             }
         }
 
-        // Lưu data vào localStorage
+        // Lưu data vào localStorage với validation
         function saveToStorage() {
+            console.log('Saving to localStorage...', linksData);
             try {
-                localStorage.setItem('fbGroupLinks', JSON.stringify(linksData));
-                localStorage.setItem('fbGroupLinks_backup', JSON.stringify({
+                // Validate data trước khi lưu
+                if (!Array.isArray(linksData)) {
+                    throw new Error('Data is not an array');
+                }
+                
+                const dataToSave = JSON.stringify(linksData);
+                localStorage.setItem('fbGroupLinks', dataToSave);
+                
+                // Backup với metadata
+                const backupData = {
                     data: linksData,
                     timestamp: new Date().toISOString(),
-                    count: linksData.length
-                }));
-                console.log('💾 Saved', linksData.length, 'links to localStorage');
+                    count: linksData.length,
+                    version: '1.0'
+                };
+                localStorage.setItem('fbGroupLinks_backup', JSON.stringify(backupData));
                 
-                // Update status
-                updateSaveStatus('✅ Đã lưu tự động');
+                console.log('Saved successfully:', linksData.length, 'links');
+                
+                // Verify save bằng cách đọc lại
+                const verification = localStorage.getItem('fbGroupLinks');
+                if (verification) {
+                    console.log('Save verification passed');
+                    updateSaveStatus(`Đã lưu ${linksData.length} links`);
+                } else {
+                    throw new Error('Save verification failed');
+                }
+                
             } catch (error) {
-                console.error('❌ Error saving to localStorage:', error);
-                updateSaveStatus('❌ Lỗi lưu dữ liệu');
+                console.error('Error saving to localStorage:', error);
+                updateSaveStatus('Lỗi lưu dữ liệu');
+                
+                // Fallback: thử lưu vào backup location
+                try {
+                    sessionStorage.setItem('fbGroupLinks_session', JSON.stringify(linksData));
+                    console.log('📝 Saved to sessionStorage as fallback');
+                } catch (e) {
+                    console.error('SessionStorage fallback failed:', e);
+                }
             }
         }
 
@@ -376,10 +425,10 @@
         }
 
         function clearAllLinks() {
-            if (confirm('⚠️ Bạn có chắc muốn xóa TẤT CẢ links? Hành động này không thể hoàn tác!')) {
+            if (confirm('Bạn có chắc muốn xóa TẤT CẢ links? Hành động này không thể hoàn tác!')) {
                 linksData = [];
                 renderLinks();
-                alert('✅ Đã xóa tất cả links!');
+                alert('Đã xóa tất cả links!');
             }
         }
 
@@ -388,7 +437,7 @@
             const url = document.getElementById('linkUrl').value.trim();
             
             if (!name || !url) {
-                alert('⚠️ Vui lòng nhập đầy đủ tên và URL!');
+                alert('Vui lòng nhập đầy đủ tên và URL!');
                 return;
             }
             
@@ -396,7 +445,7 @@
             try {
                 new URL(url);
             } catch (e) {
-                alert('⚠️ URL không hợp lệ! Vui lòng kiểm tra lại.');
+                alert('URL không hợp lệ! Vui lòng kiểm tra lại.');
                 return;
             }
             
@@ -407,7 +456,7 @@
             document.getElementById('linkUrl').value = '';
             
             renderLinks();
-            alert(`✅ Đã thêm "${name}" vào danh sách!`);
+            alert(`Đã thêm "${name}" vào danh sách!`);
         }
 
         function deleteSelectedLink() {
@@ -441,12 +490,12 @@
             console.log('linksData:', linksData);
             
             if (fromLink > toLink) {
-                alert('⚠️ Link bắt đầu không thể lớn hơn link kết thúc!');
+                alert('Link bắt đầu không thể lớn hơn link kết thúc!');
                 return;
             }
             
             if (linksData.length === 0) {
-                alert('⚠️ Không có links để mở!');
+                alert('Không có links để mở!');
                 return;
             }
             
@@ -483,7 +532,7 @@
                     }, index * 100); // 100ms apart
                 });
                 
-                status.textContent = `✅ Đã mở ${selectedLinks.length} links cùng lúc!`;
+                status.textContent = `Đã mở ${selectedLinks.length} links cùng lúc!`;
                 status.style.color = '#28a745';
             } 
             // OPTION 2: Mở từng cái với delay
@@ -515,7 +564,7 @@
                     }
                 }
                 
-                status.textContent = `✅ Hoàn thành! Đã mở ${selectedLinks.length} links.`;
+                status.textContent = `Hoàn thành! Đã mở ${selectedLinks.length} links.`;
                 status.style.color = '#28a745';
             }
             
@@ -597,8 +646,151 @@
             alert(`Debug Info:\n- Từ link ${fromLink} đến ${toLink}\n- Tổng ${linksData.length} links\n- Sẽ mở ${selectedLinks.length} links\n\nXem Console (F12) để detail!`);
         }
 
+        function debugStorage() {
+            console.log('=== STORAGE DEBUG ===');
+            
+            // Check localStorage content
+            const mainData = localStorage.getItem('fbGroupLinks');
+            const backupData = localStorage.getItem('fbGroupLinks_backup');
+            const sessionData = sessionStorage.getItem('fbGroupLinks_session');
+            
+            console.log('Main localStorage:', mainData);
+            console.log('Backup localStorage:', backupData);
+            console.log('Session fallback:', sessionData);
+            console.log('Current linksData:', linksData);
+            
+            // Storage info
+            let storageInfo = `🔧 STORAGE DEBUG:\n\n`;
+            storageInfo += `📊 Current Memory: ${linksData.length} links\n`;
+            storageInfo += `💾 localStorage: ${mainData ? JSON.parse(mainData).length + ' links' : 'EMPTY'}\n`;
+            storageInfo += `🔄 Backup: ${backupData ? JSON.parse(backupData).count + ' links' : 'EMPTY'}\n`;
+            storageInfo += `📝 Session: ${sessionData ? JSON.parse(sessionData).length + ' links' : 'EMPTY'}\n\n`;
+            
+            // Browser support
+            storageInfo += `🌐 localStorage supported: ${typeof(Storage) !== "undefined"}\n`;
+            storageInfo += `🔒 Storage quota: ${navigator.storage ? 'Available' : 'Not available'}\n`;
+            
+            // Test write
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                storageInfo += `✅ Write test: PASSED\n`;
+            } catch (e) {
+                storageInfo += `❌ Write test: FAILED (${e.message})\n`;
+            }
+            
+            alert(storageInfo);
+            
+            // Recovery options
+            if (!mainData && backupData) {
+                if (confirm('Phát hiện backup data! Khôi phục không?')) {
+                    const backup = JSON.parse(backupData);
+                    linksData = backup.data;
+                    saveToStorage();
+                    renderLinks();
+                    alert('✅ Đã khôi phục từ backup!');
+                }
+            }
+        }
+
+        function exportData() {
+            if (linksData.length === 0) {
+                alert('⚠️ Không có dữ liệu để export!');
+                return;
+            }
+            
+            const exportData = {
+                appName: 'Facebook Group Auto Opener',
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                totalLinks: linksData.length,
+                links: linksData
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `facebook-groups-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert(`✅ Đã export ${linksData.length} links thành file backup!`);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    let links = [];
+                    
+                    // Handle different formats
+                    if (importedData.links && Array.isArray(importedData.links)) {
+                        // New format with metadata
+                        links = importedData.links;
+                    } else if (Array.isArray(importedData)) {
+                        // Old format - direct array
+                        links = importedData;
+                    } else {
+                        throw new Error('Invalid format');
+                    }
+                    
+                    // Validate structure
+                    for (const item of links) {
+                        if (!item.name || !item.url) {
+                            throw new Error('Missing name or url field');
+                        }
+                    }
+                    
+                    // Confirm import
+                    if (confirm(`Import ${links.length} links?\nDữ liệu hiện tại (${linksData.length} links) sẽ bị thay thế!`)) {
+                        linksData = links;
+                        saveToStorage(); // Lưu sau khi import
+                        renderLinks();
+                        alert(`✅ Đã import ${links.length} links thành công!`);
+                    }
+                    
+                } catch (error) {
+                    console.error('Import error:', error);
+                    alert('⚠️ File không hợp lệ! Vui lòng chọn file backup đúng định dạng.');
+                }
+            };
+            reader.readAsText(file);
+            
+            // Clear file input
+            event.target.value = '';
+        }
+
+        // Auto-save khi user rời khỏi trang
+        window.addEventListener('beforeunload', function(e) {
+            console.log('💾 Auto-saving before page unload...');
+            saveToStorage();
+        });
+
         // Khởi tạo giao diện
-        renderLinks();
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM loaded, initializing app...');
+            loadFromStorage(); // Load data trước
+            renderLinks();
+        });
+
+        // Fallback nếu DOMContentLoaded đã qua
+        if (document.readyState === 'loading') {
+            // DOM chưa load xong, wait for DOMContentLoaded
+        } else {
+            // DOM đã sẵn sàng
+            console.log('🚀 DOM ready, initializing app immediately...');
+            loadFromStorage();
+            renderLinks();
+        }
     </script>
 </body>
 </html>
