@@ -176,7 +176,7 @@
 <body>
     <div class="container">
         <h1>Facebook Group Auto Opener</h1>
-        
+ 
         <div class="add-section">
             <h3>Quản lý Links:</h3>
             <div style="margin-bottom: 10px;">
@@ -188,7 +188,7 @@
                 <select id="linkToDelete" class="group-input" style="width: 250px;">
                     <option value="">-- Chọn link để xóa --</option>
                 </select>
-                <button onclick="deleteSelectedLink()" class="remove-group" style="margin-left: 10px; padding: 8px 15px;">Xóa Link</button>
+                <button onclick="deleteSelectedLink()" class="remove-group" style="margin-left: 10px; padding: 8px 15px;">🗑Xóa Link</button>
                 <button onclick="clearAllLinks()" class="remove-group" style="margin-left: 5px; padding: 8px 15px;">Xóa tất cả</button>
             </div>
             <div style="text-align: center; margin-top: 10px;">
@@ -226,27 +226,8 @@
             </div>
             
             <button onclick="openSelectedGroups()" class="open-button" id="openBtn">
-                MỞ TẤT CẢ LINKS
+                🚀 MỞ TẤT CẢ LINKS
             </button>
-            
-            <div style="text-align: center; margin: 15px 0;">
-                <button onclick="testRange()" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0 5px;">
-                    Test Range
-                </button>
-                <button onclick="testPopup()" style="background: #fd7e14; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0 5px;">
-                    Test Popup
-                </button>
-                <button onclick="debugStorage()" style="background: #6f42c1; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0 5px;">
-                    Debug Storage
-                </button>
-                <button onclick="exportData()" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0 5px;">
-                    Export Backup
-                </button>
-                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
-                <button onclick="document.getElementById('importFile').click()" style="background: #17a2b8; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0 5px;">
-                    Import Backup
-                </button>
-            </div>
             
             <div class="status" id="status"></div>
         </div>
@@ -331,7 +312,7 @@
                 // Fallback: thử lưu vào backup location
                 try {
                     sessionStorage.setItem('fbGroupLinks_session', JSON.stringify(linksData));
-                    console.log('📝 Saved to sessionStorage as fallback');
+                    console.log('Saved to sessionStorage as fallback');
                 } catch (e) {
                     console.error('SessionStorage fallback failed:', e);
                 }
@@ -513,9 +494,9 @@
             console.log('Selected links:', selectedLinks);
             
             if (selectedLinks.length === 0) {
-                alert('⚠️ Không có links trong khoảng đã chọn!');
+                alert('Không có links trong khoảng đã chọn!');
                 openBtn.disabled = false;
-                openBtn.textContent = '🚀 MỞ TẤT CẢ LINKS';
+                openBtn.textContent = 'MỞ TẤT CẢ LINKS';
                 return;
             }
             
@@ -542,7 +523,7 @@
                     const link = selectedLinks[i];
                     const currentLinkNumber = fromLink + i;
                     
-                    status.textContent = `🚀 Đang mở link ${currentLinkNumber}/${toLink}: ${link.name}`;
+                    status.textContent = `Đang mở link ${currentLinkNumber}/${toLink}: ${link.name}`;
                     status.style.color = '#1877f2';
                     
                     console.log(`Opening link ${currentLinkNumber}: ${link.name} → ${link.url}`);
@@ -553,13 +534,13 @@
                     // Check if popup was blocked
                     if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
                         console.warn('Popup blocked for:', link.name);
-                        alert(`⚠️ Popup bị chặn cho link: ${link.name}\nVui lòng cho phép popup và thử lại!`);
+                        alert(`Popup bị chặn cho link: ${link.name}\nVui lòng cho phép popup và thử lại!`);
                         break;
                     }
                     
                     // Delay trước link tiếp theo
                     if (i < selectedLinks.length - 1) {
-                        console.log(`⏳ Waiting ${delay}ms...`);
+                        console.log(`Waiting ${delay}ms...`);
                         await new Promise(resolve => setTimeout(resolve, delay));
                     }
                 }
@@ -569,7 +550,7 @@
             }
             
             openBtn.disabled = false;
-            openBtn.textContent = '🚀 MỞ TẤT CẢ LINKS';
+            openBtn.textContent = 'MỞ TẤT CẢ LINKS';
             console.log('=== DEBUG END ===');
         }
 
@@ -610,7 +591,7 @@
                     // Show result after last test
                     if (index === testUrls.length - 1) {
                         setTimeout(() => {
-                            alert(`Test Popup Results:\n✅ Opened: ${successCount}\n❌ Blocked: ${blockedCount}\n\n${blockedCount > 0 ? 'Please allow popups for this site!' : 'Popup working fine!'}`);
+                            alert(`Test Popup Results:\nOpened: ${successCount}\n Blocked: ${blockedCount}\n\n${blockedCount > 0 ? 'Please allow popups for this site!' : 'Popup working fine!'}`);
                         }, 500);
                     }
                 }, index * 200);
@@ -661,22 +642,22 @@
             
             // Storage info
             let storageInfo = `🔧 STORAGE DEBUG:\n\n`;
-            storageInfo += `📊 Current Memory: ${linksData.length} links\n`;
-            storageInfo += `💾 localStorage: ${mainData ? JSON.parse(mainData).length + ' links' : 'EMPTY'}\n`;
-            storageInfo += `🔄 Backup: ${backupData ? JSON.parse(backupData).count + ' links' : 'EMPTY'}\n`;
-            storageInfo += `📝 Session: ${sessionData ? JSON.parse(sessionData).length + ' links' : 'EMPTY'}\n\n`;
+            storageInfo += `Current Memory: ${linksData.length} links\n`;
+            storageInfo += `localStorage: ${mainData ? JSON.parse(mainData).length + ' links' : 'EMPTY'}\n`;
+            storageInfo += `Backup: ${backupData ? JSON.parse(backupData).count + ' links' : 'EMPTY'}\n`;
+            storageInfo += `Session: ${sessionData ? JSON.parse(sessionData).length + ' links' : 'EMPTY'}\n\n`;
             
             // Browser support
-            storageInfo += `🌐 localStorage supported: ${typeof(Storage) !== "undefined"}\n`;
-            storageInfo += `🔒 Storage quota: ${navigator.storage ? 'Available' : 'Not available'}\n`;
+            storageInfo += `localStorage supported: ${typeof(Storage) !== "undefined"}\n`;
+            storageInfo += `Storage quota: ${navigator.storage ? 'Available' : 'Not available'}\n`;
             
             // Test write
             try {
                 localStorage.setItem('test', 'test');
                 localStorage.removeItem('test');
-                storageInfo += `✅ Write test: PASSED\n`;
+                storageInfo += `Write test: PASSED\n`;
             } catch (e) {
-                storageInfo += `❌ Write test: FAILED (${e.message})\n`;
+                storageInfo += `Write test: FAILED (${e.message})\n`;
             }
             
             alert(storageInfo);
@@ -688,14 +669,14 @@
                     linksData = backup.data;
                     saveToStorage();
                     renderLinks();
-                    alert('✅ Đã khôi phục từ backup!');
+                    alert('Đã khôi phục từ backup!');
                 }
             }
         }
 
         function exportData() {
             if (linksData.length === 0) {
-                alert('⚠️ Không có dữ liệu để export!');
+                alert('Không có dữ liệu để export!');
                 return;
             }
             
@@ -719,7 +700,7 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
-            alert(`✅ Đã export ${linksData.length} links thành file backup!`);
+            alert(`Đã export ${linksData.length} links thành file backup!`);
         }
 
         function importData(event) {
@@ -755,12 +736,12 @@
                         linksData = links;
                         saveToStorage(); // Lưu sau khi import
                         renderLinks();
-                        alert(`✅ Đã import ${links.length} links thành công!`);
+                        alert(`Đã import ${links.length} links thành công!`);
                     }
                     
                 } catch (error) {
                     console.error('Import error:', error);
-                    alert('⚠️ File không hợp lệ! Vui lòng chọn file backup đúng định dạng.');
+                    alert('File không hợp lệ! Vui lòng chọn file backup đúng định dạng.');
                 }
             };
             reader.readAsText(file);
@@ -771,7 +752,7 @@
 
         // Auto-save khi user rời khỏi trang
         window.addEventListener('beforeunload', function(e) {
-            console.log('💾 Auto-saving before page unload...');
+            console.log('Auto-saving before page unload...');
             saveToStorage();
         });
 
@@ -787,7 +768,7 @@
             // DOM chưa load xong, wait for DOMContentLoaded
         } else {
             // DOM đã sẵn sàng
-            console.log('🚀 DOM ready, initializing app immediately...');
+            console.log('DOM ready, initializing app immediately...');
             loadFromStorage();
             renderLinks();
         }
