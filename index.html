@@ -176,11 +176,6 @@
 <body>
     <div class="container">
         <h1>🔗 Facebook Group Auto Opener</h1>
-        <p style="text-align: center; color: #666; margin-bottom: 20px;">
-            Công cụ mở nhiều Facebook Groups tự động - Dành cho Marketing & Social Media
-        </p>
-        
-
         
         <div class="add-section">
             <h3>➕ Quản lý Links:</h3>
@@ -195,6 +190,11 @@
                 </select>
                 <button onclick="deleteSelectedLink()" class="remove-group" style="margin-left: 10px; padding: 8px 15px;">🗑️ Xóa Link</button>
                 <button onclick="clearAllLinks()" class="remove-group" style="margin-left: 5px; padding: 8px 15px;">🧹 Xóa tất cả</button>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+                <small id="saveStatus" style="font-weight: bold;"></small>
+                <br>
+                <small style="color: #666;">💾 Dữ liệu tự động lưu vào trình duyệt</small>
             </div>
         </div>
         
@@ -229,19 +229,79 @@
                 🚀 MỞ TẤT CẢ LINKS
             </button>
             
+            <div style="text-align: center; margin: 15px 0;">
+                <button onclick="testRange()" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0 5px;">
+                    🔍 Test Range
+                </button>
+                <button onclick="testPopup()" style="background: #fd7e14; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0 5px;">
+                    🪟 Test Popup
+                </button>
+            </div>
+            
             <div class="status" id="status"></div>
         </div>
     </div>
 
     <script>
         // Dữ liệu đơn giản - chỉ một danh sách links
-        let linksData = [
-            { name: "Link 1", url: "https://facebook.com/groups/group1" },
-            { name: "Link 2", url: "https://facebook.com/groups/group2" },
-            { name: "Link 3", url: "https://facebook.com/groups/group3" },
-            { name: "Link 4", url: "https://facebook.com/groups/group4" },
-            { name: "Link 5", url: "https://facebook.com/groups/group5" }
-        ];
+        let linksData = [];
+
+        // Load data từ localStorage khi khởi động
+        function loadFromStorage() {
+            try {
+                const saved = localStorage.getItem('fbGroupLinks');
+                if (saved) {
+                    linksData = JSON.parse(saved);
+                    console.log('✅ Loaded', linksData.length, 'links from localStorage');
+                } else {
+                    // Default demo data nếu chưa có
+                    linksData = [
+                        { name: "AIFIRST", url: "https://www.facebook.com/groups/aifirst.vn" },
+                        { name: "AI VIET NAM", url: "https://www.facebook.com/groups/aivietnam.edu.vn" },
+                        { name: "AI-First Company x AI First Growth Platform", url: "https://www.facebook.com/groups/ai.transform" },
+                        { name: "Chém Gió Về AI - Cộng Đồng Chia Sẻ & Kết Nối", url: "https://www.facebook.com/groups/1255173554614475" },
+                        { name: "AI FOR VIETNAM EDUCATION", url: "https://www.facebook.com/groups/1043393823642926" }
+                    ];
+                    saveToStorage(); // Lưu demo data
+                }
+            } catch (error) {
+                console.error('❌ Error loading from localStorage:', error);
+                linksData = [];
+            }
+        }
+
+        // Lưu data vào localStorage
+        function saveToStorage() {
+            try {
+                localStorage.setItem('fbGroupLinks', JSON.stringify(linksData));
+                localStorage.setItem('fbGroupLinks_backup', JSON.stringify({
+                    data: linksData,
+                    timestamp: new Date().toISOString(),
+                    count: linksData.length
+                }));
+                console.log('💾 Saved', linksData.length, 'links to localStorage');
+                
+                // Update status
+                updateSaveStatus('✅ Đã lưu tự động');
+            } catch (error) {
+                console.error('❌ Error saving to localStorage:', error);
+                updateSaveStatus('❌ Lỗi lưu dữ liệu');
+            }
+        }
+
+        // Update save status display
+        function updateSaveStatus(message) {
+            const statusEl = document.getElementById('saveStatus');
+            if (statusEl) {
+                statusEl.textContent = message;
+                statusEl.style.color = message.includes('✅') ? '#28a745' : '#dc3545';
+                
+                // Clear message after 3 seconds
+                setTimeout(() => {
+                    statusEl.textContent = '';
+                }, 3000);
+            }
+        }
 
         function renderLinks() {
             const container = document.getElementById('dropdown-0');
@@ -376,8 +436,12 @@
             const openBtn = document.getElementById('openBtn');
             const status = document.getElementById('status');
             
+            console.log('=== DEBUG START ===');
+            console.log('fromLink:', fromLink, 'toLink:', toLink);
+            console.log('linksData:', linksData);
+            
             if (fromLink > toLink) {
-                alert('Link bắt đầu không thể lớn hơn link kết thúc!');
+                alert('⚠️ Link bắt đầu không thể lớn hơn link kết thúc!');
                 return;
             }
             
@@ -389,43 +453,148 @@
             openBtn.disabled = true;
             openBtn.textContent = '⏳ Đang mở...';
             
-            // Debug: Log để kiểm tra
-            console.log('fromLink:', fromLink, 'toLink:', toLink);
-            console.log('linksData:', linksData);
+            // Tạo array các links cần mở
+            const selectedLinks = [];
+            for (let i = fromLink - 1; i < toLink; i++) {
+                if (linksData[i]) {
+                    selectedLinks.push(linksData[i]);
+                }
+            }
             
-            // Lấy links trong khoảng được chọn - FIX: sử dụng slice đúng cách
-            const selectedLinks = linksData.slice(fromLink - 1, toLink); // slice(start, end) - end không bao gồm
-            console.log('selectedLinks:', selectedLinks);
+            console.log('Selected links:', selectedLinks);
             
-            const totalSelected = selectedLinks.length;
-            
-            if (totalSelected === 0) {
+            if (selectedLinks.length === 0) {
                 alert('⚠️ Không có links trong khoảng đã chọn!');
                 openBtn.disabled = false;
                 openBtn.textContent = '🚀 MỞ TẤT CẢ LINKS';
                 return;
             }
             
-            for (let i = 0; i < selectedLinks.length; i++) {
-                const link = selectedLinks[i];
-                const currentLinkNumber = fromLink + i;
+            // OPTION 1: Mở tất cả cùng lúc (không delay)
+            if (delay === 0 || selectedLinks.length <= 3) {
+                console.log('Opening all links at once...');
+                selectedLinks.forEach((link, index) => {
+                    const linkNumber = fromLink + index;
+                    console.log(`Opening link ${linkNumber}: ${link.name} → ${link.url}`);
+                    
+                    // Sử dụng setTimeout nhỏ để tránh browser block
+                    setTimeout(() => {
+                        window.open(link.url, '_blank');
+                    }, index * 100); // 100ms apart
+                });
                 
-                status.textContent = `🚀 Đang mở link ${currentLinkNumber}/${toLink}: ${link.name}`;
-                status.style.color = '#1877f2';
+                status.textContent = `✅ Đã mở ${selectedLinks.length} links cùng lúc!`;
+                status.style.color = '#28a745';
+            } 
+            // OPTION 2: Mở từng cái với delay
+            else {
+                console.log('Opening links with delay...');
+                for (let i = 0; i < selectedLinks.length; i++) {
+                    const link = selectedLinks[i];
+                    const currentLinkNumber = fromLink + i;
+                    
+                    status.textContent = `🚀 Đang mở link ${currentLinkNumber}/${toLink}: ${link.name}`;
+                    status.style.color = '#1877f2';
+                    
+                    console.log(`Opening link ${currentLinkNumber}: ${link.name} → ${link.url}`);
+                    
+                    // Mở link
+                    const newWindow = window.open(link.url, '_blank');
+                    
+                    // Check if popup was blocked
+                    if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                        console.warn('Popup blocked for:', link.name);
+                        alert(`⚠️ Popup bị chặn cho link: ${link.name}\nVui lòng cho phép popup và thử lại!`);
+                        break;
+                    }
+                    
+                    // Delay trước link tiếp theo
+                    if (i < selectedLinks.length - 1) {
+                        console.log(`⏳ Waiting ${delay}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
                 
-                console.log(`Opening link ${currentLinkNumber}:`, link.name, link.url);
-                window.open(link.url, '_blank');
-                
-                // Delay giữa các links (trừ link cuối cùng)
-                if (i < selectedLinks.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, delay));
+                status.textContent = `✅ Hoàn thành! Đã mở ${selectedLinks.length} links.`;
+                status.style.color = '#28a745';
+            }
+            
+            openBtn.disabled = false;
+            openBtn.textContent = '🚀 MỞ TẤT CẢ LINKS';
+            console.log('=== DEBUG END ===');
+        }
+
+        function testPopup() {
+            console.log('Testing popup functionality...');
+            
+            // Test mở 3 tabs cùng lúc
+            const testUrls = [
+                'https://www.google.com',
+                'https://www.facebook.com', 
+                'https://www.youtube.com'
+            ];
+            
+            let successCount = 0;
+            let blockedCount = 0;
+            
+            testUrls.forEach((url, index) => {
+                setTimeout(() => {
+                    const newWindow = window.open(url, '_blank');
+                    
+                    if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                        blockedCount++;
+                        console.warn(`Popup ${index + 1} blocked:`, url);
+                    } else {
+                        successCount++;
+                        console.log(`Popup ${index + 1} opened:`, url);
+                        
+                        // Đóng test window sau 2 giây
+                        setTimeout(() => {
+                            try {
+                                newWindow.close();
+                            } catch(e) {
+                                console.log('Could not close test window (normal if user navigated)');
+                            }
+                        }, 2000);
+                    }
+                    
+                    // Show result after last test
+                    if (index === testUrls.length - 1) {
+                        setTimeout(() => {
+                            alert(`Test Popup Results:\n✅ Opened: ${successCount}\n❌ Blocked: ${blockedCount}\n\n${blockedCount > 0 ? 'Please allow popups for this site!' : 'Popup working fine!'}`);
+                        }, 500);
+                    }
+                }, index * 200);
+            });
+        }
+
+        function testRange() {
+            const fromLink = parseInt(document.getElementById('fromLink').value);
+            const toLink = parseInt(document.getElementById('toLink').value);
+            
+            console.log('=== TEST RANGE ===');
+            console.log('From:', fromLink, 'To:', toLink);
+            console.log('Total links:', linksData.length);
+            console.log('Links:', linksData.map((link, i) => `${i+1}. ${link.name}`));
+            
+            // Test selection
+            const selectedLinks = [];
+            for (let i = fromLink - 1; i < toLink; i++) {
+                if (linksData[i]) {
+                    selectedLinks.push({
+                        index: i + 1,
+                        name: linksData[i].name,
+                        url: linksData[i].url
+                    });
                 }
             }
             
-            status.textContent = `✅ Hoàn thành! Đã mở ${totalSelected} links (từ ${fromLink} đến ${toLink}). 🎉`;
-            status.style.color = '#28a745';
-            openBtn.disabled = false;
-            openBtn.textContent = '🚀 MỞ TẤT CẢ LINKS';
+            console.log('Selected links:');
+            selectedLinks.forEach(link => {
+                console.log(`  ${link.index}. ${link.name} → ${link.url}`);
+            });
+            
+            alert(`Debug Info:\n- Từ link ${fromLink} đến ${toLink}\n- Tổng ${linksData.length} links\n- Sẽ mở ${selectedLinks.length} links\n\nXem Console (F12) để detail!`);
         }
 
         // Khởi tạo giao diện
